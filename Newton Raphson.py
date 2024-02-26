@@ -1,29 +1,43 @@
-def newtonRaphson(g, x0, eps, delta, itermax):
-    x = x0  # Initialize the root estimate with the initial guess x0
-    for _ in range(itermax):  # Iterate up to the maximum number of iterations
-        f, fx = g(x)  # Evaluate the function and its derivative at the current estimate x
-        if abs(fx) < delta:  # Check if the derivative is too small (criteria for divergence)
-            raise Exception("Error: Divergence")  # Raise an exception if the method is diverging
-        step = f / fx  # Calculate the step using Newton-Raphson method
-        if abs(step) < eps:  # Check if the step size is smaller than the tolerance
-            return x  # Return the root estimate if within tolerance
-        x -= step  # Update the root estimate for the next iteration
-    raise Exception("Error: Maximum Number of Iterations")  # Raise an exception if maximum iterations exceeded
+def newtonRaphson(g, x0, eps=1e-8, delta=1e-12, itermax=100):
+    """
+    Newton-Raphson method for finding the root of a function.
 
-# Example usage:
-# Define your function g(x) and its derivative
-def g(x):
-    f = x**2 - 4  # Define the function f(x)
-    fx = 2*x  # Define the derivative f'(x)
+    Parameters:
+        g (callable): The function to find the root of. Should return the function value and its derivative.
+        x0 (float): The initial guess for the root.
+        eps (float): Tolerance for the function value (default: 1e-8).
+        delta (float): Tolerance for the change between two consecutive iterates (default: 1e-12).
+        itermax (int): Maximum number of iterations (default: 100).
+
+    Returns:
+        float: Approximation of the root.
+
+    Raises:
+        ValueError: If the maximum number of iterations is reached or if the derivative is too small.
+    """
+    for _ in range(itermax):
+        f, fx = g(x0)
+        if abs(fx) < 1e-12:
+            raise ValueError("Error: zero or very small derivative.")
+        if abs(f) < eps:
+            return x0
+        x1 = x0 - f / fx
+        if abs(x1 - x0) > delta:
+            raise ValueError('Error: Divergence')
+        if abs(x1 - x0) <= eps * abs(x1):
+            return x1
+        x0 = x1
+    raise ValueError('Error: Maximum Number of Iterations')
+
+
+# Example function
+def example_function(x):
+    f = x**2 - 1
+    fx = 2 * x
     return f, fx
 
-x0 = 3  # Initial guess
-eps = 1e-6  # Tolerance
-delta = 1e-6  # Divergence criteria
-itermax = 100  # Maximum number of iterations
 
-try:
-    root = newtonRaphson(g, x0, eps, delta, itermax)  # Call the newtonRaphson function
-    print("Root found:", root)  # Print the root if found within tolerance
-except Exception as e:
-    print(e)  # Print any exceptions raised during the computation
+if __name__ == '__main__':
+    # Example usage
+    root = newtonRaphson(example_function, 1.5)
+    print("The found root is", root)
